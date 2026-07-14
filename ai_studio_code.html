@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Special Space For You</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#05070f',
+              card: 'rgba(255, 255, 255, 0.03)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#d946ef', // Fuchsia
+              glow: '#6366f1',   // Indigo
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #05070f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Glassmorphism utility */
+    .glass {
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-heavy {
+      background: rgba(10, 12, 22, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Glow Effects */
+    .glow-fuchsia {
+      box-shadow: 0 0 40px -10px rgba(217, 70, 239, 0.3);
+    }
+    .glow-indigo {
+      box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Candle Smoke & Flame Animations */
+    @keyframes flicker {
+      0%, 100% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+      50% { transform: scale(1.1) rotate(3deg); opacity: 1; filter: drop-shadow(0 0 12px #f59e0b); }
+    }
+    .flame {
+      animation: flicker 1.2s infinite ease-in-out;
+      transform-origin: bottom center;
+    }
+
+    /* Flip Card */
+    .flip-card-inner {
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .flip-card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Envelope Animations */
+    .envelope-wrapper {
+      perspective: 1000px;
+    }
+    .envelope-flap {
+      transform-origin: top center;
+      transition: transform 0.6s ease-in-out;
+      z-index: 30;
+    }
+    .envelope-letter {
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s;
+    }
+    .envelope-open .envelope-flap {
+      transform: rotateX(180deg);
+    }
+    .envelope-open .envelope-letter {
+      transform: translateY(-50%) scale(1.05);
+      z-index: 40;
+    }
+  </style>
+</head>
+<body class="bg-brand-dark text-slate-100 font-sans selection:bg-brand-accent/30 selection:text-white overflow-x-hidden min-h-screen relative">
+
+  <!-- Particle Background Layer -->
+  <canvas id="starfield" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"></canvas>
+
+  <!-- Global Audio Control -->
+  <div class="fixed top-6 right-6 z-50">
+    <button id="music-toggle" class="glass px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/10 transition-all text-xs tracking-wider uppercase border border-white/10">
+      <svg id="music-icon-play" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg id="music-icon-pause" class="w-4 h-4 fill-current hidden" viewBox="0 0 24 24">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+      <span id="music-status">Play Sound</span>
+    </button>
+    <audio id="bg-music" loop preload="auto">
+      <!-- Safe, royalty-free soft piano track placeholder -->
+      <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+    </audio>
+  </div>
+
+  <!-- STAGE 1: The Gateway Entrance -->
+  <section id="gateway" class="min-h-screen flex flex-col justify-center items-center px-4 relative z-20 transition-all duration-1000">
+    <div class="max-w-xl text-center space-y-8 glass p-8 md:p-12 rounded-3xl glow-indigo border border-white/10">
+      <div class="space-y-3">
+        <span class="text-xs uppercase tracking-[0.2em] text-brand-accent font-semibold">Special Space Decrypted</span>
+        <h1 class="text-4xl md:text-5xl font-serif font-semibold text-white tracking-tight">For Someone Extraordinary</h1>
+      </div>
+      
+      <p class="text-slate-400 text-sm md:text-base leading-relaxed max-w-md mx-auto">
+        I designed this quiet corner of the digital universe specifically for you. Turn up your volume, take a deep breath, and step inside.
+      </p>
+
+      <button id="enter-btn" class="relative group overflow-hidden px-8 py-4 rounded-full bg-gradient-to-r from-brand-accent to-brand-glow text-white font-medium text-sm tracking-wider uppercase transition-all duration-300 hover:shadow-[0_0_30px_rgba(217,70,239,0.5)] active:scale-95">
+        <span class="relative z-10">Step Inside</span>
+        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+      </button>
+    </div>
+  </section>
+
+  <!-- STAGE 2: The Main Journey (Hidden initially) -->
+  <main id="main-content" class="hidden opacity-0 transition-opacity duration-1000 max-w-5xl mx-auto px-4 py-20 space-y-32 relative z-10">
+    
+    <!-- Hero Header Section -->
+    <header class="text-center space-y-6 pt-10">
+      <div class="inline-block glass px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent mb-2">
+        ✨ Today is Your Day ✨
+      </div>
+      <h2 class="text-5xl md:text-7xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400 tracking-tight leading-tight">
+        Happy Birthday!
+      </h2>
+      <!-- Dynamic Greeting / Subtitle (Easily customizable) -->
+      <p class="text-lg md:text-xl text-slate-400 font-light max-w-2xl mx-auto leading-relaxed">
+        To a beautiful soul who makes every day infinitely brighter. Let's celebrate you today.
+      </p>
+    </header>
+
+    <!-- Interactive Memories Gallery -->
+    <section class="space-y-12">
+      <div class="text-center space-y-2">
+        <h3 class="text-2xl md:text-3xl font-serif text-white font-semibold">A Few Little Reminders</h3>
+        <p class="text-slate-500 text-sm">Hover or tap each card to flip and reveal a special message.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <!-- Card 1 -->
+        <div class="flip-card w-full h-80 cursor-pointer">
+          <div class="flip-card-inner relative w-full h-full text-center">
+            <!-- Front -->
+            <div class="flip-card-front absolute inset-0 w-full h-full rounded-2xl glass p-6 flex flex-col justify-between items-center border border-white/10">
+              <div class="w-12 h-12 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent mt-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253"/></svg>
+              </div>
+              <h4 class="text-lg font-semibold text-white">Your Energy</h4>
+              <p class="text-xs text-slate-500 mb-4">Tap to reveal detail</p>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back absolute inset-0 w-full h-full rounded-2xl glass-heavy p-6 flex flex-col justify-center items-center border border-brand-accent/20 glow-fuchsia">
+              <h4 class="text-lg font-semibold text-brand-accent mb-3">Radiant &amp; Kind</h4>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                You have this effortless ability to light up any room you walk into. Your genuine kindness is an absolute rare find.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="flip-card w-full h-80 cursor-pointer">
+          <div class="flip-card-inner relative w-full h-full text-center">
+            <!-- Front -->
+            <div class="flip-card-front absolute inset-0 w-full h-full rounded-2xl glass p-6 flex flex-col justify-between items-center border border-white/10">
+              <div class="w-12 h-12 rounded-full bg-brand-glow/10 flex items-center justify-center text-brand-glow mt-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h4 class="text-lg font-semibold text-white">Favorite Moments</h4>
+              <p class="text-xs text-slate-500 mb-4">Tap to reveal detail</p>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back absolute inset-0 w-full h-full rounded-2xl glass-heavy p-6 flex flex-col justify-center items-center border border-brand-glow/20 glow-indigo">
+              <h4 class="text-lg font-semibold text-brand-glow mb-3">Pure Laughter</h4>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                From the silly late-night conversations to simple quiet moments, every single memory built with you is one I hold incredibly close.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="flip-card w-full h-80 cursor-pointer">
+          <div class="flip-card-inner relative w-full h-full text-center">
+            <!-- Front -->
+            <div class="flip-card-front absolute inset-0 w-full h-full rounded-2xl glass p-6 flex flex-col justify-between items-center border border-white/10">
+              <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mt-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <h4 class="text-lg font-semibold text-white">The Future</h4>
+              <p class="text-xs text-slate-500 mb-4">Tap to reveal detail</p>
+            </div>
+            <!-- Back -->
+            <div class="flip-card-back absolute inset-0 w-full h-full rounded-2xl glass-heavy p-6 flex flex-col justify-center items-center border-amber-500/20 glow-indigo">
+              <h4 class="text-lg font-semibold text-amber-500 mb-3">Unlimited Dreams</h4>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                May this year bring you all the warmth, growth, and unexpected magic you deserve. I can't wait to see you conquer everything ahead.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Candle Blow Out Feature -->
+    <section class="max-w-xl mx-auto space-y-10">
+      <div class="text-center space-y-3">
+        <h3 class="text-2xl md:text-3xl font-serif text-white font-semibold">Make A Wish</h3>
+        <p class="text-slate-400 text-sm max-w-sm mx-auto">
+          Hover over or tap each of the glowing candles below to blow them out.
+        </p>
+      </div>
+
+      <div class="glass p-8 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center border border-white/10">
+        <!-- SVG Cake Illustration -->
+        <svg class="w-64 h-64 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cake Base Plate -->
+          <path d="M20 170 C 20 185, 180 185, 180 170 Z" fill="#1e293b" />
+          <path d="M15 170 L185 170" stroke="#475569" stroke-width="3" stroke-linecap="round" />
+          
+          <!-- Cake Layer 1 (Bottom Tier) -->
+          <rect x="35" y="120" width="130" height="45" rx="6" fill="#1e1b4b" stroke="#312e81" stroke-width="2" />
+          <!-- Cream drip effect -->
+          <path d="M35 130 Q 45 140 55 130 T 75 130 T 95 130 T 115 130 T 135 130 T 155 130 T 165 130 L165 120 L35 120 Z" fill="#d946ef" opacity="0.6"/>
+
+          <!-- Cake Layer 2 (Top Tier) -->
+          <rect x="50" y="80" width="100" height="40" rx="6" fill="#311042" stroke="#4a154b" stroke-width="2" />
+          <!-- Cream drip top -->
+          <path d="M50 90 Q 60 100 70 90 T 90 90 T 110 90 T 130 90 T 150 90 L150 80 L50 80 Z" fill="#6366f1" opacity="0.6"/>
+
+          <!-- Candle 1 (Left) -->
+          <g id="candle-1">
+            <rect x="70" y="55" width="6" height="25" fill="#f43f5e" rx="1" />
+            <!-- Flame (Interactive) -->
+            <path id="flame-1" class="flame cursor-pointer fill-amber-400 filter drop-shadow" d="M73 38 C68 45, 78 45, 73 38 Z M73 38 C71 42, 75 42, 73 38 Z" transform="scale(1.5) translate(-21, -12)"/>
+          </g>
+
+          <!-- Candle 2 (Center) -->
+          <g id="candle-2">
+            <rect x="97" y="50" width="6" height="30" fill="#a855f7" rx="1" />
+            <!-- Flame (Interactive) -->
+            <path id="flame-2" class="flame cursor-pointer fill-amber-400 filter drop-shadow" d="M100 32 C95 39, 105 39, 100 32 Z M100 32 C98 36, 102 36, 100 32 Z" transform="scale(1.5) translate(-30, -10)"/>
+          </g>
+
+          <!-- Candle 3 (Right) -->
+          <g id="candle-3">
+            <rect x="124" y="55" width="6" height="25" fill="#06b6d4" rx="1" />
+            <!-- Flame (Interactive) -->
+            <path id="flame-3" class="flame cursor-pointer fill-amber-400 filter drop-shadow" d="M127 38 C122 45, 132 45, 127 38 Z M127 38 C125 42, 129 42, 127 38 Z" transform="scale(1.5) translate(-39, -12)"/>
+          </g>
+        </svg>
+
+        <div id="wish-success-msg" class="absolute bottom-6 text-center text-brand-accent font-semibold tracking-wider opacity-0 transition-opacity duration-700 text-sm">
+          🎉 Wish Made! May all your dreams unfold.
+        </div>
+      </div>
+    </section>
+
+    <!-- The Heartfelt Sealed Letter Section -->
+    <section class="max-w-2xl mx-auto space-y-12 pb-16">
+      <div class="text-center space-y-2">
+        <h3 class="text-2xl md:text-3xl font-serif text-white font-semibold">A Secret Letter</h3>
+        <p class="text-slate-500 text-sm">Click the wax seal to open and read your letter.</p>
+      </div>
+
+      <div class="relative flex justify-center items-center h-[420px] envelope-wrapper" id="envelope-container">
+        <!-- The Envelope Backing -->
+        <div class="absolute bottom-0 w-[340px] md:w-[480px] h-[240px] bg-[#111322] rounded-b-2xl border-b border-x border-white/10 shadow-2xl z-10"></div>
+        
+        <!-- The Letter Sheet (Slides Up) -->
+        <div id="envelope-letter" class="absolute bottom-4 w-[310px] md:w-[440px] h-[280px] glass-heavy rounded-xl p-6 md:p-8 overflow-y-auto envelope-letter opacity-0 pointer-events-none shadow-inner border border-white/20">
+          <div class="space-y-4 font-serif text-slate-200">
+            <h4 class="text-lg md:text-xl font-semibold text-brand-accent">Dearest [Name],</h4>
+            <p class="text-xs md:text-sm leading-relaxed font-sans text-slate-300">
+              I wanted to take a moment to write you something lasting. In a world full of fleeting notifications, I hope this little space serves as a reminder of how unique and incredibly valued you are.
+            </p>
+            <p class="text-xs md:text-sm leading-relaxed font-sans text-slate-300">
+              Thank you for sharing your light, your laughs, and your beautiful perspective with the rest of us. Watching you live your life is like watching someone paint a masterpiece in real-time. Never change who you are.
+            </p>
+            <p class="text-xs md:text-sm leading-relaxed font-sans text-slate-300">
+              I hope this year ahead brings you closer to your deepest aspirations, wraps you in love, and treats you with the extreme gentleness you deserve.
+            </p>
+            <div class="pt-4 font-serif text-right text-brand-accent text-sm md:text-base">
+              With warmth &amp; affection, <br>
+              <span class="font-sans font-semibold text-xs tracking-wider uppercase text-white mt-1 block">[Your Name]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Envelope Top Flap (Rotates open) -->
+        <div id="envelope-flap" class="absolute top-[180px] w-[340px] md:w-[480px] h-[120px] bg-[#1a1d33] border-t border-x border-white/10 envelope-flap shadow-md z-30" style="clip-path: polygon(0% 0%, 50% 100%, 100% 0%);"></div>
+
+        <!-- Sealed Lock Button / Wax Seal -->
+        <button id="seal-btn" class="absolute top-[155px] z-50 w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-brand-accent flex items-center justify-center text-white font-bold text-lg cursor-pointer transition-all duration-300 shadow-[0_0_20px_rgba(217,70,239,0.4)] hover:scale-110 active:scale-95 border-2 border-white/20">
+          ❤
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Dynamic Confetti Canvas Overlay (Active only when cake is blown out) -->
+  <canvas id="confetti-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-40 hidden"></canvas>
+
+  <script>
+    // ==========================================
+    // CUSTOMIZABLE PARAMETERS (Edit these!)
+    // ==========================================
+    const CONFIG = {
+      recipientName: "Special One", // Changes "[Name]" in the letter or adds to header if needed
+      senderName: "Your Friend",    // Changes "[Your Name]" in the letter
+      letterText: [
+        "I wanted to take a moment to write you something lasting. In a world full of fleeting notifications, I hope this little space serves as a reminder of how unique and incredibly valued you are.",
+        "Thank you for sharing your light, your laughs, and your beautiful perspective with everyone around you. Having you in my life is a true privilege.",
+        "I hope this year ahead brings you closer to your deepest aspirations, wraps you in comforting warmth, and treats you with the gentle love you absolutely deserve."
+      ]
+    };
+
+    // Apply custom configuration immediately
+    document.addEventListener("DOMContentLoaded", () => {
+      const letterContainer = document.getElementById("envelope-letter");
+      if (letterContainer) {
+        letterContainer.innerHTML = `
+          <div class="space-y-4 font-serif text-slate-200">
+            <h4 class="text-lg md:text-xl font-semibold text-brand-accent">Dearest ${CONFIG.recipientName},</h4>
+            ${CONFIG.letterText.map(para => `<p class="text-xs md:text-sm leading-relaxed font-sans text-slate-300">${para}</p>`).join('')}
+            <div class="pt-4 font-serif text-right text-brand-accent text-sm md:text-base">
+              With love &amp; admiration, <br>
+              <span class="font-sans font-semibold text-xs tracking-wider uppercase text-white mt-1 block">${CONFIG.senderName}</span>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    // ==========================================
+    // 1. STARFIELD CANVAS BACKGROUND
+    // ==========================================
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+
+    let stars = [];
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const mouse = { x: null, y: null, radius: 120 };
+
+    class Star {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 1.5 + 0.2;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.density = (Math.random() * 30) + 15;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.color = Math.random() > 0.8 ? '#d946ef' : '#6366f1'; // Violet/Fuchsia star distribution
+      }
+
+      update() {
+        // Simple drift
+        this.y -= 0.15;
+        if (this.y < 0) this.y = height;
+
+        // Interaction with cursor
+        if (mouse.x !== null && mouse.y !== null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            let forceDirectionX = dx / distance;
+            let forceDirectionY = dy / distance;
+            let maxDistance = mouse.radius;
+            let force = (maxDistance - distance) / maxDistance;
+            let directionX = forceDirectionX * force * this.density;
+            let directionY = forceDirectionY * force * this.density;
+
+            this.x -= directionX;
+            this.y -= directionY;
+          }
+        }
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.opacity;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initStars() {
+      stars = [];
+      const numStars = Math.floor((width * height) / 8000);
+      for (let i = 0; i < numStars; i++) {
+        stars.push(new Star());
+      }
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, width, height);
+      stars.forEach(star => {
+        star.update();
+        star.draw();
+      });
+      requestAnimationFrame(animateStars);
+    }
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initStars();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.x;
+      mouse.y = e.y;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    initStars();
+    animateStars();
+
+
+    // ==========================================
+    // 2. AUDIO TOGGLE
+    // ==========================================
+    const audio = document.getElementById('bg-music');
+    const musicToggle = document.getElementById('music-toggle');
+    const playIcon = document.getElementById('music-icon-play');
+    const pauseIcon = document.getElementById('music-icon-pause');
+    const statusText = document.getElementById('music-status');
+
+    musicToggle.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().then(() => {
+          playIcon.classList.add('hidden');
+          pauseIcon.classList.remove('hidden');
+          statusText.textContent = "Playing";
+        }).catch(() => {
+          // Fallback if browser severely blocks audio
+          console.warn("Audio loading delayed or blocked by browser restriction.");
+        });
+      } else {
+        audio.pause();
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        statusText.textContent = "Muted";
+      }
+    });
+
+
+    // ==========================================
+    // 3. ENTER STAGE TRANSITION
+    // ==========================================
+    const enterBtn = document.getElementById('enter-btn');
+    const gatewaySection = document.getElementById('gateway');
+    const mainContentSection = document.getElementById('main-content');
+
+    enterBtn.addEventListener('click', () => {
+      // Trigger subtle fade-out transition for intro
+      gatewaySection.classList.add('opacity-0', 'pointer-events-none');
+      
+      // Attempt background audio play instantly as a result of user click interaction
+      audio.play().then(() => {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        statusText.textContent = "Playing";
+      }).catch(e => console.log("Autoplay caught on entrance block: User interaction resolved"));
+
+      setTimeout(() => {
+        gatewaySection.classList.add('hidden');
+        mainContentSection.classList.remove('hidden');
+        // Let modern browser handle flow layout injection comfortably
+        setTimeout(() => {
+          mainContentSection.classList.add('opacity-100');
+        }, 50);
+      }, 1000);
+    });
+
+
+    // ==========================================
+    // 4. CANDLE BLOWING & CONFETTI ANIMATION
+    // ==========================================
+    const flames = [
+      { element: document.getElementById('flame-1'), blown: false },
+      { element: document.getElementById('flame-2'), blown: false },
+      { element: document.getElementById('flame-3'), blown: false }
+    ];
+    let totalBlown = 0;
+
+    flames.forEach(flameObj => {
+      const triggerInteraction = () => {
+        if (!flameObj.blown) {
+          flameObj.element.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+          flameObj.element.style.opacity = '0';
+          flameObj.element.style.transform = 'scale(0)';
+          flameObj.blown = true;
+          totalBlown++;
+          
+          if (totalBlown === flames.length) {
+            triggerConfettiExplosion();
+          }
+        }
+      };
+      
+      // Support desktop hover & mobile touch accurately
+      flameObj.element.addEventListener('mouseenter', triggerInteraction);
+      flameObj.element.addEventListener('touchstart', triggerInteraction);
+    });
+
+    // Simple robust Canvas-based Confetti System
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimationId = null;
+
+    class ConfettiParticle {
+      constructor() {
+        this.x = window.innerWidth / 2;
+        this.y = window.innerHeight * 0.7; // Start near the cake coordinates
+        this.size = Math.random() * 8 + 4;
+        this.speedX = Math.random() * 20 - 10;
+        this.speedY = Math.random() * -15 - 10;
+        this.gravity = 0.35;
+        this.color = `hsl(${Math.random() * 360}, 90%, 60%)`;
+        this.opacity = 1;
+        this.decay = Math.random() * 0.015 + 0.005;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.speedY += this.gravity;
+        this.opacity -= this.decay;
+      }
+
+      draw() {
+        confettiCtx.fillStyle = this.color;
+        confettiCtx.globalAlpha = this.opacity;
+        confettiCtx.beginPath();
+        confettiCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        confettiCtx.fill();
+      }
+    }
+
+    function triggerConfettiExplosion() {
+      confettiCanvas.classList.remove('hidden');
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+
+      // Spawn initial massive wave of particles
+      for (let i = 0; i < 150; i++) {
+        confettiParticles.push(new ConfettiParticle());
+      }
+
+      // Display success note elegantly
+      const wishMsg = document.getElementById('wish-success-msg');
+      wishMsg.classList.remove('opacity-0');
+      wishMsg.classList.add('opacity-100');
+
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      
+      confettiParticles.forEach((p, index) => {
+        p.update();
+        p.draw();
+        
+        // Remove dead particles safely
+        if (p.opacity <= 0 || p.y > window.innerHeight) {
+          confettiParticles.splice(index, 1);
+        }
+      });
+
+      if (confettiParticles.length > 0) {
+        confettiAnimationId = requestAnimationFrame(animateConfetti);
+      } else {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiCanvas.classList.add('hidden');
+      }
+    }
+
+
+    // ==========================================
+    // 5. ENVELOPE INTERACTION
+    // ==========================================
+    const sealBtn = document.getElementById('seal-btn');
+    const envelopeContainer = document.getElementById('envelope-container');
+    const envelopeLetter = document.getElementById('envelope-letter');
+
+    sealBtn.addEventListener('click', () => {
+      // Toggle states
+      if (!envelopeContainer.classList.contains('envelope-open')) {
+        envelopeContainer.classList.add('envelope-open');
+        envelopeLetter.classList.remove('pointer-events-none', 'opacity-0');
+        // Let the letter lift out and gain opacity
+        setTimeout(() => {
+          envelopeLetter.classList.add('opacity-100');
+        }, 100);
+        sealBtn.style.opacity = "0";
+        sealBtn.style.pointerEvents = "none";
+      }
+    });
+  </script>
+</body>
+</html>
